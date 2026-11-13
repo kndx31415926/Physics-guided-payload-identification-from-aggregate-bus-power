@@ -1,0 +1,136 @@
+MANUSCRIPT DATA INDEX
+
+Data and source index for the eight figures and four tables. Paths are relative to the package root.
+
+Figure reproduction: run_review('figures').
+Table and error recomputation: run_review('tables').
+Mathematical derivations: manuscript/supplement.pdf.
+Document labels: submission/TEX_LABEL_MAP.json.
+
+Figure 1  Payload estimation and reference-assisted adaptation
+  fig:flow
+  manuscript/matlab_sources/paper_fig_overview.m
+  manuscript/figures/matlab/observation_update_flow.pdf
+  studies/pnn_large_training_20261031_v1/source_snapshot/src/pnn_predict.m
+  studies/pcu_prospective_20261030_v1/source_snapshot/run_pcu_job.m
+  Measurement and estimation framework.
+  Aggregate power and native encoders supply observations; known references supply adaptation labels.
+
+Figure 2  Payload estimation accuracy
+  fig:pnn_errors
+  manuscript/matlab_sources/paper_fig_large_training.m
+  manuscript/figures/source_data/pnn_summary.csv
+  manuscript/figures/source_data/pnn_primary_comparison.json
+  studies/pnn_large_training_20261031_v1/predictions.csv
+  studies/pnn_large_training_20261031_v1/summary.csv
+  studies/pnn_large_training_20261031_v1/selected_models.csv
+  studies/pnn_large_training_20261031_v1/primary_comparison.json
+  2,000 test objects in each of four conditions. Raw errors include every finite prediction, including rejected predictions.
+  Mass MAE is in g; COM error is the mean Euclidean cx/cz distance in mm. Bars show mean errors.
+
+Figure 3  Paired comparisons with ridge estimators
+  fig:pnn_intervals
+  manuscript/matlab_sources/paper_fig_large_training.m
+  manuscript/figures/source_data/pnn_paired_intervals.csv
+  manuscript/figures/source_data/pnn_primary_comparison.json
+  studies/pnn_large_training_20261031_v1/paired_intervals.csv
+  studies/pnn_large_training_20261031_v1/predictions.csv
+  studies/pnn_large_training_20261031_v1/spec.json
+  2,000 paired objects; 5,000 bootstrap resamples preserve each object's four conditions. Limits are adjusted across 24 endpoints.
+  Dots show mean network-minus-ridge differences; triangles show one-sided 95% upper limits. Negative differences favor the network.
+
+Figure 4  Matched-loss affine and nonlinear estimators
+  fig:matched_loss
+  manuscript/matlab_sources/paper_fig_simulation_scope.m
+  manuscript/figures/source_data/simulation_scope/matched_intervals.csv
+  manuscript/figures/source_data/simulation_scope/convex_intervals.csv
+  studies/psx_supplement_formal_20261106_v1/original_evaluation/paired_intervals.csv
+  studies/psx_supplement_formal_20261106_v1/original_evaluation/predictions.csv
+  studies/psx_supplement_formal_20261106_v1/original_evaluation/summary.csv
+  studies/pca_convex_audit_20261111_v1/original_evaluation/paired_intervals.csv
+  studies/pca_convex_audit_20261111_v1/original_evaluation/paired_object_deltas.csv
+  studies/pca_convex_audit_20261111_v1/original_evaluation/predictions.csv
+  studies/pca_convex_audit_20261111_v1/training/convergence_summary.csv
+  500 paired objects under four conditions; 5,000 object resamples give descriptive 95% intervals. Raw errors include finite rejected predictions.
+  Affine controls share the same evaluation panel. Differences compare the fixed nonlinear estimator with Adam affine and convex affine controls.
+
+Figure 5  Cross-model sensitivity
+  fig:cross_scope
+  manuscript/matlab_sources/paper_fig_simulation_scope.m
+  manuscript/figures/source_data/simulation_scope/cross_summary.csv
+  studies/pbd_exploration_20261110_v1/snapshots/snapshot_012/evaluation/summary.csv
+  studies/pbd_exploration_20261110_v1/snapshots/snapshot_012/evaluation/predictions.csv
+  studies/pbd_exploration_20261110_v1/snapshots/snapshot_012/candidate_grid.csv
+  studies/pbd_exploration_20261110_v1/snapshots/snapshot_012/diagnostic_summary.csv
+  Exploratory panel of 12 paired objects at 13 unique conditions, including a shared zero-severity baseline. All 156 finite raw episodes are retained.
+  Curves join sampled means along prescribed mechanical, electrical and combined perturbation paths. Geometry and nominal calibration are shared.
+
+Figure 6  Power decomposition and payload sensitivity
+  fig:power_mechanism
+  manuscript/matlab_sources/paper_fig_simulation_scope.m
+  manuscript/figures/source_data/simulation_scope/mechanism_episodes.csv
+  studies/pmd_mechanism_20261111_v1/episode_mechanism.csv
+  studies/pmd_mechanism_20261111_v1/pose_mechanism.csv
+  studies/pmd_mechanism_20261111_v1/holding_sample_ledger.csv
+  studies/pmd_mechanism_20261111_v1/checks_by_episode.csv
+  studies/pmd_mechanism_20261111_v1/object_summary_by_cell.csv
+  studies/pmd_mechanism_20261111_v1/INTERPRETATION_AND_UNITS.txt
+  studies/pmd_mechanism_20261111_v1/analysis_source.m
+  12 objects, 13 conditions and eight poses per episode; 31 holding samples per pose, 38,688 samples in total.
+  Power components sum to signed total power. Local projections use true parameters for diagnostic analysis at six fit poses and two held-out poses; the weighting floor is 0.04 W.
+
+Figure 7  Reference-assisted adaptation under drift
+  fig:pcu_raw_overview
+  manuscript/matlab_sources/paper_fig_pcu.m
+  studies/pcu_prospective_20261030_v1/online_predictions.csv
+  studies/pcu_prospective_20261030_v1/online_pooled_summary.csv
+  studies/pcu_prospective_20261030_v1/online_stream_summary.csv
+  studies/pcu_prospective_20261030_v1/online_updates.csv
+  studies/pcu_prospective_20261030_v1/paired_stream_bootstrap.csv
+  128 unknown events per scenario: eight streams, four blocks and four unknowns per block. All finite raw predictions are included.
+  The compact model is used for reference-assisted adaptation. Event-level means are recalculated from online_predictions.csv. Symbols use logarithmic axes and show mean errors.
+  matlab/review_figures.m
+
+Figure 8  Neural and ridge adaptation
+  fig:pcr_comparison
+  manuscript/matlab_sources/paper_fig_online_ridge.m
+  manuscript/figures/source_data/pcr_model_paired_intervals.csv
+  studies/pcr_online_ridge_20261031_v4/matched_model_paired_intervals.csv
+  studies/pcr_online_ridge_20261031_v4/matched_model_stream_deltas.csv
+  studies/pcr_online_ridge_20261031_v4/matched_model_summary.csv
+  studies/pcr_online_ridge_20261031_v4/online_predictions.csv
+  studies/pcu_prospective_20261030_v1/online_predictions.csv
+  128 paired finite events per scenario; 4,000 complete-stream bootstrap resamples across eight streams give descriptive 95% intervals.
+  Neural-minus-ridge differences compare gated_full methods with matched observations, references and gates. Preprocessing and initial models remain learner-specific.
+
+Table 1  Probing configurations
+  tab:probe02_draft
+  studies/pnn_large_training_20261031_v1/source_snapshot/src/bpil_probe_library.m
+  studies/pnn_large_training_20261031_v1/configuration.mat
+  Eight prescribed probe_02 configurations; fit poses 2--7 and held-out poses 1 and 8.
+
+Table 2  Estimator parameters
+  tab:learning_draft
+  studies/pnn_large_training_20261031_v1/spec.json
+  studies/pnn_large_training_20261031_v1/FROZEN_PROTOCOL.txt
+  studies/pnn_large_training_20261031_v1/source_snapshot/src/bpil_config.m
+  studies/pnn_large_training_20261031_v1/source_snapshot/prepare_pnn_run.m
+  studies/pnn_large_training_20261031_v1/source_snapshot/src/pnn_nn_fit.m
+  Physical solver settings, acceptance thresholds, candidate grids, Adam settings and ensemble seeds. The 0.04 W weighting floor is separate from the 0.15/0.20 W acceptance thresholds.
+
+Table 3  Electrothermal model parameters
+  tab:electrothermal
+  provenance/scientific_review/cross_model_config.m
+  provenance/scientific_review/cross_model_condition.m
+  provenance/scientific_review/cross_model_rhs.m
+  provenance/scientific_review/cross_model_protocol.txt
+  Prescribed electrothermal parameter changes with severity s and nuisance factors; shared geometry, rigidBodyTree backend and nominal cold calibration.
+
+Table 4  Estimation errors across plant conditions
+  tab:pnn_all_methods
+  manuscript/figures/source_data/pnn_summary.csv
+  studies/pnn_large_training_20261031_v1/summary.csv
+  studies/pnn_large_training_20261031_v1/predictions.csv
+  studies/pnn_large_training_20261031_v1/selected_models.csv
+  Nine methods; 2,000 finite raw predictions per condition, including rejected predictions. Entries give mass MAE in g and mean planar COM distance in mm. The asterisk identifies the validation-selected primary model.
+
