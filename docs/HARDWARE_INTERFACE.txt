@@ -1,0 +1,35 @@
+ROBOT CONTROL AND POWER ACQUISITION
+
+From the package root in MATLAB:
+  packageRoot = pwd;
+  addpath(fullfile(packageRoot,'project'));
+  R = run_robot_control();
+
+The default call reports the configuration in dry-run mode. Live operation
+uses an options structure with mode='hardware' and enable_hardware=true.
+action='inspect' requests encoder feedback; action='trajectory' follows the
+supplied joint plan. Set the serial port, joint mapping, offsets and limits
+for the attached robot. project/ROBOT_CONTROL.txt gives the complete options.
+
+Control modules:
+  project/src/bpil_arm_control_profile.m
+  project/src/bpil_arm_plan.m
+  project/src/bpil_arm_serial_transport.m
+  project/src/bpil_arm_control_loop.m
+  project/src/bpil_arm_preflight.m
+
+For acquisition and payload estimation:
+  modelFile = fullfile(packageRoot,'studies', ...
+      'pgar_nominal_20261029_v1','model_bundle.mat');
+  R = run_hardware_hefting(struct('mode','dry_run','model_file',modelFile));
+
+The model input uses the pgar_residual_bundle_v1 format. The power-provider
+factory returns timestamped Vin_V and Iin_A samples on the transport's
+monotonic clock. Their product supplies bus power. Command/encoder scheduling
+uses a 50 ms period; estimation follows the completed probing sequence.
+project/docs/HARDWARE_INTERFACE.txt defines timestamps, sample fields and
+session/replay formats.
+
+Python USB utilities in project/scripts/roarm_* use pyserial. The MATLAB
+interfaces use serialport. Device setup and calibrated joint mappings are
+specified in project/ROBOT_CONTROL.txt. Software tests are in project/tests.
