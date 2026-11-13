@@ -1,0 +1,507 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=25mm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs,array}
+\usepackage{placeins}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage[super,sort&compress,comma]{natbib}
+\usepackage{setspace}
+\doublespacing
+\usepackage[mathlines]{lineno}
+\usepackage{etoolbox}
+\makeatletter
+\@ifpackagelater{lineno}{2022/07/29}{}{%
+  \newcount\LN@ams@eqpen
+  \cspreto{math@cr@}{%
+    \global\@eqpen\numexpr\@eqpen+\LN@ams@eqpen\relax}
+  \cspreto{align}{%
+    \linenomath
+    \postdisplaypenalty=0\relax
+    \global\LN@ams@eqpen\interdisplaylinepenalty}
+  \csappto{endalign}{%
+    \global\LN@ams@eqpen\z@
+    \endlinenomath}
+}
+\makeatother
+\renewcommand{\linenumberfont}{\normalfont\sffamily\fontsize{8}{9.6}\selectfont\color{gray}}
+\setlength{\linenumbersep}{12pt}
+\modulolinenumbers[1]
+\leftlinenumbers
+\usepackage[font=small,labelfont=bf]{caption}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdfauthor={Zhenglin Li, Peizhong Li, Ting Zhu and Yi Li}}
+\urlstyle{same}
+\renewcommand{\bibnumfmt}[1]{#1.}
+\setlength{\bibsep}{0pt}
+\raggedbottom
+\newtheorem{pviproposition}{Proposition}
+\setlength{\emergencystretch}{2em}
+\setlength{\parskip}{0em}
+\title{Supplemental material\\[0.4em]\large Physics-guided payload identification from aggregate bus power}
+\author{Zhenglin Li, Peizhong Li, Ting Zhu and Yi Li\thanks{Corresponding author: Yi Li, School of Art and Design, Wuhan Institute of Technology, No. 206 Guanggu Street, Hongshan District, Wuhan 430205, China. Email: \texttt{13323107655@163.com}. ORCID: \href{https://orcid.org/0009-0000-9541-8300}{0009-0000-9541-8300}.}}
+\date{}
+
+\begin{document}
+\maketitle
+\linenumbers
+\setcounter{section}{0}
+\setcounter{equation}{0}
+\setcounter{table}{0}
+\renewcommand{\thesection}{S\arabic{section}}
+\renewcommand{\theequation}{S\arabic{equation}}
+\renewcommand{\thetable}{S\arabic{table}}
+
+\section{Identifiability and domain bounds}
+\label{app:pvi_certificate}
+
+\begin{proof}[Proof of the conditional-injectivity proposition in the main article]
+Because each component of $F$ is quadratic,
+\begin{equation}
+F(\beta_1)-F(\beta_2)=
+J_\beta\!\left(\frac{\beta_1+\beta_2}{2}\right)(\beta_1-\beta_2).
+\label{eq:pvi_midpoint}
+\end{equation}
+Convexity places the midpoint in $\Omega$. Full column rank implies that
+the output difference vanishes only when $\beta_1=\beta_2$. Positive mass
+then gives $c_x=h_x/m$ and $c_z=h_z/m$. Substituting
+$\beta_1-\beta_2=S S^{-1}(\beta_1-\beta_2)$ and applying the singular-value
+bound proves the stability inequality in the main article.
+\end{proof}
+
+To assess rank between grid points, we divide the physical solver box into
+sub-boxes and enclose their mass-moment ranges. Since $J_\beta$ is affine,
+$G_j=\partial J_\beta/\partial\beta_j$ is constant. For box center $b$ and
+half-widths $r_j$, Mirsky's singular-value perturbation bound gives
+\begin{align}
+\ell&=\sigma_{\min}(J_\beta(b)S)
+-(1+\varepsilon_G)\sum_j r_j\|G_jS\|_2-\delta,
+\label{eq:pvi_box_bound}\\
+\delta&=\varepsilon_{\mathrm{cover}}\max\!\left\{
+1,\|J_\beta(b)S\|_2+(1+\varepsilon_G)\sum_jr_j\|G_jS\|_2\right\}.
+\label{eq:cover_numerical_margin}
+\end{align}
+Here $\varepsilon_G=10^{-12}$ and $\varepsilon_{\mathrm{cover}}=10^{-10}$
+are numerical safeguards. The diagonal entries of $S$ are the enclosing
+domain spans: $0.19$~kg, $0.0476$~kg\,m, and $0.0125$~kg\,m. The unit floor
+applies in these scaled coordinates. Bisection resolves all boxes. The
+six-pose design has 17,797 leaves and a minimum bound of
+$1.59647\times10^{-5}$; the eight-pose design has 3,327 leaves and a minimum
+bound of $1.60902\times10^{-5}$. Because the partitions differ, these loose
+bounds do not show which design is statistically more precise. Evaluation uses double precision
+without directed outward rounding. The bounds therefore support the rank
+condition numerically, without a formal rounding-error certificate.
+
+Across an $11^3$ grid of the payload domain, repeated-pose,
+constant-tool-pitch, and prescribed varying-pitch designs have ranks one,
+two, and three, respectively. The eight-pose inverse recovered the noiseless
+solution in all 675 solves over 27 objects and 25 initializations.
+Independently calculated torques agree with MATLAB \texttt{rigidBodyTree}
+within $6.67\times10^{-16}$~N\,m. These results are consistent with the
+fixed-pose, nominal-calibration analysis. Rank at achieved postures under
+plant mismatch requires separate evaluation.
+
+
+\section{Electrothermal dynamics and power decomposition}
+\label{app:cross_model}
+
+The additional model evolves joint angle, velocity, motor current,
+controller integral state, temperature, and an energy ledger. With quantities
+referred to the output shaft, each drive obeys
+\begin{align}
+ L_i\dot i_i &= v_i-d_i(i_i)-R_i i_i-K_i\dot q_i,
+ &\tau_i&=K_i i_i,\\
+ R_i &= R_{i,0}\rho_i[1+\alpha_T(T_i-T_a)],
+ &d_i(i_i)&=v_{d,i}\tanh(i_i/i_s)+r_{b,i}i_i,\\
+ C_{T,i}\dot T_i&=R_i i_i^2-h_i(T_i-T_a),
+ &P_{\mathrm{bus}}&=P_a+\sum_i\max(v_i i_i,0).
+ \label{eq:electrothermal}
+\end{align}
+The same SI coefficient $K_i$ relates current to torque and velocity to
+back EMF. An ideal nonregenerative 12~V bus supplies the drives; negative
+bridge power is dissipated locally. Cold resistances satisfy
+$R_{i,0}/K_i^2=b_i$, where $b_i$ are the nominal holding-loss coefficients.
+Both models thus assume the same cold static calibration.
+$P_a$ includes a prescribed offset and low-frequency ripple. Nominal geometry,
+outer-loop gains, and stall-torque ratings are retained. Position error,
+velocity damping, and integral torque set a saturated current reference.
+A current loop follows, with bus-voltage saturation. This differs from the
+original speed-dependent torque-envelope controller. Stribeck friction,
+electrical dynamics, bridge loss, and temperature add further deviations.
+Table 3 in the main article lists the parameters and severity-dependent
+departures. Vectors follow joint order; link vectors follow the three pitch
+links. Each nonzero departure is multiplied by severity $s$ and its frozen
+uniform nuisance factor in $[0.8,1.2]$, except the common coefficient
+$\alpha_T$ and auxiliary terms. The paired quantities below share factors.
+We prescribe these values to study the mechanisms; they are not identified
+from a physical device.
+
+
+
+Baseline and mechanical-only cases have $\alpha_T=0$ and no added electrical
+departures; electrical-only cases have no added mechanical departures.
+Velocity, current, and integral torque start at zero at the first pose.
+The model code specifies saturation and anti-windup rules.
+Each link's mass and COM changes share one factor. Coulomb and Stribeck
+terms share axis factors, as do the two bridge-loss terms. Auxiliary ripple
+has a frozen uniform phase. The initial temperature rise and
+$\alpha_T$ both scale with severity. Their product depends quadratically on
+$s$, so severity is not a linear loss scale. The model excludes
+mechanical backlash, structural compliance, contact, and source-voltage sag.
+Individual simulated currents are excluded from estimator inputs.
+
+MATLAB \texttt{ode15s} integrates the dynamics with relative tolerance
+$\varepsilon_r=2\times10^{-6}$, absolute tolerance
+$\varepsilon_a=10^{-8}$, and maximum step $h_{\max}=5$~ms. We assessed
+numerical sensitivity on one complete 22.6~s trajectory at combined
+$s=1$, using the fixed first payload from the development set.
+We divided both tolerances by four and halved $h_{\max}$, keeping
+observation times and random draws fixed. Angle, current, temperature,
+and plateau power changed by at most $1.60\times10^{-7}$~rad,
+$5.52\times10^{-6}$~A, $9.41\times10^{-7}$~K, and
+$5.69\times10^{-6}$~W, respectively. This single trajectory measures
+local numerical sensitivity, not convergence over the full domain.
+
+For a saved holding sample, let $P_0$ be nominal power at its true angle
+and payload, and $\tau_{0i}$ the corresponding nominal torque. The exact
+signed accounting identity is
+\begin{align}
+ P_{\mathrm{bus}}-P_0={}&(P_a-a_0)+\sum_i d_i(i_i)i_i
+ +\sum_i(R_i-R_{i,0})i_i^2 \notag\\
+ &+\sum_iR_{i,0}\left[i_i^2-(\tau_{0i}/K_i)^2\right]
+ +P_{\mathrm{shaft}}+P_{\mathrm{brake}}+P_{\mathrm{mag}},
+ \label{eq:power_ledger}
+\end{align}
+where $P_{\mathrm{shaft}}=\sum_iK_i i_i\dot q_i$,
+$P_{\mathrm{brake}}=\sum_i\max(-v_i i_i,0)$, and
+$P_{\mathrm{mag}}=\sum_iL_i i_i\dot i_i$.
+The resistance term separates into cold-scale and thermal contributions.
+Magnetic power follows directly from the circuit equation. We evaluate the
+identity before averaging, at 31 samples per pose, eight poses per episode,
+and 156 episodes. These 38,688 samples quantify algebraic closure. The
+payload object remains the independent unit for statistical inference.
+
+To quantify mismatch that payload changes can absorb locally, evaluate
+the nominal power Jacobian $J$ at true payload parameters and observed mean
+angles. Let $p_{0,k}=P_{\mathrm{nominal}}(\bar q_k,\theta_{\mathrm{true}})$
+at the observed mean angle. This differs from the samplewise true-angle
+power in Eq.~\eqref{eq:power_ledger}. For the original six fitting poses,
+write $A=\Sigma^{-1}JS_\theta$ and $b=\Sigma^{-1}(\bar P-p_0)$, where
+$S_\theta$ scales parameter spans. The matrix
+$\Sigma=\operatorname{diag}[\max(s_{P,k},\sigma_{P,\min})]$ uses the original
+per-pose sample SD and floor $\sigma_{P,\min}=0.04$~W.
+The least-squares step $u=A^\dagger b$ gives the diagnostic payload change
+$\Delta\theta=S_\theta u$ and absorbed fraction
+$\chi=\|Au\|_2^2/\|b\|_2^2$. We also evaluate the resulting power change on
+the two withheld poses. This local projection may leave the physical box.
+It is neither an estimate available to the robot nor a Fisher-information
+calculation for the changed plant.
+
+\section{Implementation details}
+These settings supplement the estimator and simulation design in the main
+article. Model selection uses only training and validation objects. The
+true-state diagnostics in Section S2 are excluded from estimator inputs
+and fitting.
+
+\subsection{Probe windows and physical inversion}
+The estimator uses aggregate power, native encoders, commands, and
+timestamps, excluding measured torques and simulator states. The eight
+targets in main-article Table 1 give joint angles in degrees in the
+reduced-model coordinates. They provide holding-power observations across
+postures. The 22.6~s probe starts with a 1~s wait, then eight 1.5~s
+transitions, each followed by a 1.2~s hold. The first transition repeats the
+starting pose; subsequent transitions use the quintic blend
+$10u^3-15u^4+6u^5$, where $u$ is normalized transition time. The final
+window of each hold supplies mean position $q_k$, mean power $\bar P_k$,
+and power standard deviation $s_{P,k}$. Stationarity requires
+\begin{equation}
+ \frac{\|q(t_b)-q(t_a)\|_2}{T_w}<v_{\mathrm{stat}},\qquad
+ \max_i\left(\max_{[t_a,t_b]}q_i-\min_{[t_a,t_b]}q_i\right)<q_{\mathrm{stat}},
+ \quad t_b-t_a=T_w.
+ \label{eq:stationarity_thresholds}
+\end{equation}
+The thresholds $T_w=0.3$~s, $v_{\mathrm{stat}}=0.035$~rad/s, and
+$q_{\mathrm{stat}}=0.012$~rad screen residual motion. All eight windows
+must be complete and stationary. Power SD measures within-window variation,
+not the mean's standard error. The physical inverse (the teacher) fits poses 2--7 and
+withholds poses 1 and 8 for evaluation. The final residual estimators use
+all eight poses.
+
+The solver box is $[0.06,0.25]$~kg by $[0.04,0.20]$~m by
+$[-0.025,0.025]$~m; weights use $\sigma_k=\max(s_{P,k},\sigma_{P,\min})$ with $\sigma_{P,\min}=0.04$~W.
+The solver, \texttt{lsqnonlin}, uses an analytic Jacobian and seven starts
+in normalized box coordinates:
+\begin{equation}
+ \mathcal U_0=\left\{\begin{aligned}
+ &(u_c,u_c,u_c),(u_l,u_l,u_l),(u_h,u_h,u_h),\\
+ &(u_l,u_h,u_h),(u_h,u_l,u_l),(u_c,u_l,u_h),(u_c,u_h,u_l)
+ \end{aligned}\right\}.
+ \label{eq:inverse_starts}
+\end{equation}
+The values $(u_l,u_c,u_h)=(0.15,0.50,0.85)$ define separated interior
+starts. We retain the solution with the lowest finite objective.
+Acceptance requires a positive exit flag, numerical rank three, and
+\begin{equation}
+ \begin{aligned}
+ \mathrm{RMSE}_{\mathrm{fit}}&\leq\varepsilon_{P,\mathrm{fit}},&
+ \mathrm{RMSE}_{\mathrm{check}}&\leq\varepsilon_{P,\mathrm{check}},\\
+ \sigma_{\min}(J_s)&\geq\underline\sigma_J,&
+ \operatorname{cond}(J_s)&\leq\kappa_{J,\max},
+ \end{aligned}
+ \label{eq:inverse_acceptance}
+\end{equation}
+where $J_s$ is the fitting Jacobian scaled by the solver-box spans and
+$\sigma_k^{-1}$. Main-article Table 2 gives the reconstruction and
+sensitivity thresholds. \texttt{physics6} denotes this teacher. \texttt{physics8} uses the
+same settings to fit all eight poses, omitting the held-out residual
+criterion. Finite rejected estimates remain available for diagnosis.
+Teacher rejection or \texttt{physics8} failure alone does not exclude an otherwise
+finite learning record.
+
+
+\subsection{Features, scaling and model selection}
+For sensitivity features, evaluate $J_\theta$ at $\theta_0$ and define
+\begin{equation}
+ G=D_\sigma^{-1}J_\theta\operatorname{diag}(s_\theta),\qquad
+ r=D_\sigma^{-1}[\bar P-P(\theta_0;\eta)],\qquad
+ v=(G^{\mathsf T}G+\lambda_G I)^{-1}G^{\mathsf T}r.
+ \label{eq:pnn_features}
+\end{equation}
+Here $s_\theta=(0.14~\mathrm{kg},0.14~\mathrm m,0.036~\mathrm m)$ and
+$\sigma_w=0.04$~W. The diagonal matrix $D_\sigma$ contains $\sigma_k$;
+$\lambda_G=10^{-3}$ provides fixed numerical damping. The 52-feature
+representation appends 24 entries of $G$, eight $s_{P,k}/\sigma_w$
+values, three entries of $v$, three $\log_{10}(1+\sigma_j(G))$ values,
+and $\log_{10}(1+\operatorname{cond}(G))$, with a machine-precision
+denominator floor. These features use only nominal calibration and measured
+summaries, excluding labels, hidden nuisance factors, and transient
+simulator information.
+
+\texttt{ridge13} and \texttt{ridgeAug} regress the physical residuals $\theta-\theta_0$
+on 13 and 52 features, respectively. They use squared error, penalized
+coefficients, and an unpenalized intercept. \texttt{interactionRidge} adds the
+91 products $z_i z_j$, $i\leq j$, of the first 13 standardized inputs
+to the 52 features, then standardizes all 143 predictors. Each ridge
+model searches the penalty grid in main-article Table 2 independently.
+
+For $n$ eligible training records, define residuals
+$u_i=\theta_i-\theta_{0i}-R(x_i)$ and amplitudes
+$d_{R,j}=\max\{\sqrt{n^{-1}\sum_i u_{ij}^2},d_{R,\min,j}\}$. Minibatches estimate
+the empirical training loss. \texttt{ridgeSkipNN13} and \texttt{ridgeSkipNNaug} use the
+selected \texttt{ridge13} and \texttt{ridgeAug} models as fixed branch $R$; \texttt{scaledNN13} uses
+$R=0$. Means, SDs, and RMS amplitudes come from training data alone.
+SDs below $10^{-10}$ are replaced by one. Floors of $10^{-5}$~kg for mass
+and $10^{-5}$~m per COM coordinate prevent unstable amplitude scaling.
+Zero output-layer weights and biases make the initial skip model reproduce
+ridge exactly. Training fixes $\alpha=1$. Validation rescales the completed
+ensembles over the declared grid, including the ridge fallback $\alpha=0$.
+
+Each of the three neural families uses six architecture/penalty
+combinations and three seeds per combination, giving 54 fits. A compact
+NN13 control adds three fits on the same data. It uses eight tanh units,
+domain-span response scales, penalty 0.001, and \texttt{fitrnet} LBFGS
+with 800 iterations and validation patience 30. Each member of the three
+scaled families retains the epoch with the lowest smooth physical
+validation loss, including epoch zero. Predictions are averaged equally
+across seeds in physical units before scoring or common clipping.
+
+\texttt{ridge13} minimizes validation mass MAE/$t_m$ plus mean planar
+distance/$t_c$. Other candidates minimize the largest of eight
+condition/metric ratios to the selected \texttt{ridge13} model. Ties are broken by
+their mean, the pooled physical score, and fixed order. The primary
+estimator is selected from the three scaled neural families using the first
+two criteria and fixed family order. This rule differs from epoch
+retention. Loss, preprocessing, and search budget differ between ridge and
+neural models, so the comparison evaluates complete estimators rather than
+nonlinearity alone.
+
+
+\subsection{Nominal plant, sampling and mismatch distributions}
+The yaw--pitch--pitch--pitch rigid-body arm is simulated in MATLAB R2026a
+with local PID control, friction, actuator limits, and 1~ms integration.
+Pitch-link lengths are
+$(0.23870809,\allowbreak 0.21600955,\allowbreak 0.06811302)$~m and
+masses are $(0.11642973,\allowbreak 0.15987536,\allowbreak 0.00475299)$~kg;
+the prescribed unloaded mass is 0.826~kg. Gravity is $9.81$~m/s$^2$.
+Nominal auxiliary draw is 2~W, and the holding coefficients are
+$3.74335616(1,0.5,1,1)$ in W/(N\,m)$^2$. These simulation priors require
+calibration for hardware use. The source and configuration specify all
+inertia and controller parameters.
+
+Host commands and encoder samples follow a 50~ms cadence, independent of
+transport delay; power is sampled every 10~ms. Command and encoder-return
+delays are independently uniform over 10--15~ms, rounded upward to the
+integration grid. Undelayed power samples are paired with the latest
+available encoder value. Gaussian encoder noise has SD $10^{-4}$~rad
+before 4096-count/revolution quantization; power-noise SD is 0.03~W per
+sample. Packet loss and clock drift are excluded.
+
+Independent Latin-hypercube designs sample
+\begin{equation}
+ \mathcal D_{\mathrm{gen}}=[m_{g,\min},m_{g,\max}]
+ \times[c_{x,g,\min},c_{x,g,\max}]
+ \times[c_{z,g,\min},c_{z,g,\max}].
+ \label{eq:generation_domain}
+\end{equation}
+The intervals are $[0.08,0.22]$~kg, $[0.05,0.19]$~m, and
+$[-0.018,0.018]$~m. A dense sub-box within a fixed
+$(0.256,0.060,0.080)$~m envelope determines physically admissible inertia
+from mass and COM. Learning uses steady holding summaries with this inertia
+construction. Training, validation, and test sets contain 12,000, 2,000,
+and 2,000 disjoint objects. Training and validation use one episode per
+object, balanced across four condition families. Each test object
+undergoes all four conditions, giving 8,000 test episodes and 22,000
+episodes overall.
+
+The nominal condition has no added mismatch. For mechanical mismatch,
+each prescribed departure is independently multiplied by a uniform
+factor over 0.5--1.5: link mass/inertia scale departures
+$(0.025,-0.02,0.03)$, longitudinal COM shifts $(1,-1,1.5)$~mm,
+friction scale departures $(0.15,0.35,0.25,0.40)$, and PID gain
+departures $(-0.02,-0.06,-0.04,-0.08)$. Electrical mismatch adds
+\begin{equation}
+ \Delta P=\alpha_P\sum_i|\tau_i|+\gamma_P\sum_i\tau_i^4.
+ \label{eq:electrical_mismatch}
+\end{equation}
+The base coefficients, $\alpha_P=0.03285784$~W/(N\,m) and
+$\gamma_P=0.02100986$~W/(N\,m)$^4$, are independently multiplied by
+factors from the same uniform distribution. At their base values, the
+terms contribute equally, totaling 2\% of nominal mean static power for
+the known $(0.15,0.12,0)$ reference payload in SI units. The combined
+condition includes both mechanisms. Nuisance, sensor, and communication
+draws are independent between episodes. Conditions are paired by object,
+not noise realization, and parameters stay fixed within each probe.
+Training and test use the same prescribed mismatch distributions.
+
+All learning methods require finite features, teacher estimates, and
+targets, with at least 100 examples per family in each fitting split.
+Failed records are retained without replacement. The sampling plan, code,
+and seeds are fixed before generation. Model selection uses only training
+and validation data; estimator parameters are fixed before test generation.
+These data are disjoint from the reference-assisted experiment. Split
+seeds are 1410101--1410103; sensor, communication, and nuisance seeds are
+respectively 14200000, 14400000, and 14500000 plus trial ID.
+
+
+\subsection{Matched affine controls and numerical fitting}
+An affine control replaces the nonlinear branch in the main article's
+prediction equation. It retains the 13 inputs, fixed ridge skip,
+training-only standardization, response amplitudes, physical loss, and
+three-seed averaging. The fixed pair uses the selected 16-unit nonlinear
+branch and a 42-parameter affine branch, both with $\lambda_N=10^{-4}$ and
+$\alpha=0.5$. Adam settings and validation stopping are identical. Equal
+penalty coefficients, however, need not regularize the two function classes
+equally. The affine search uses six penalties from $10^{-7}$ to $10^{-2}$
+and the same five correction strengths. We evaluate fixed and
+validation-selected variants, including the ridge fallback, on 500
+additional objects under all four original-generator conditions, yielding
+2,000 complete trajectories. Descriptive 95\% intervals use 5,000 paired
+object resamples without multiplicity adjustment.
+
+To assess sensitivity to optimization, we also solve the affine training
+objective in double precision, fixing the original single-rounded design
+and constants. Analytical gradients and Hessians are compared with finite
+differences. Damped Newton iterations solve each of the six penalties
+from zero and from the three retained Adam solutions. Training-gradient
+and decrement tolerances are $\varepsilon_g=10^{-7}$ and
+$\varepsilon_d=10^{-11}$, respectively; the latter scales with
+$\max(1,|\mathcal L|)$. These criteria measure numerical stationarity
+without using validation performance. Solutions must agree across
+initializations and remain consistent under single-precision inference.
+One comparator retains the fixed penalty and correction strength; the
+other uses the original validation rule. This post hoc analysis reuses
+the 500-object and 12-object panels, holding the nonlinear model fixed.
+
+
+\subsection{Reference-assisted adaptation}
+The secondary adaptation study uses a compact residual ensemble of three
+members, each with eight hidden units, initialized on nominal data. The
+principal ridge-skip estimator is not updated online. Each block stores
+predictions for four unknown objects, then probes one known empty state,
+four training references, and two distinct validation references, in
+that order. In kilograms and meters, the training $(m,c_x,c_z)$ vectors are
+$(0.09,0.06,-0.014)$, $(0.21,0.07,0.014)$,
+$(0.10,0.18,0.012)$, and $(0.20,0.17,-0.012)$;
+validation uses $(0.12,0.10,-0.005)$ and $(0.18,0.145,0.007)$.
+Unknown ground truth serves only simulation generation and scoring.
+Validation-reference labels never enter fitting.
+
+The empty probe estimates absolute auxiliary draw $a\in[a_{\min},a_{\max}]$
+and a multiplier $\lambda\in[\lambda_{\min},\lambda_{\max}]$ on the original
+nominal pitch-axis holding coefficients. The fixed plausibility bounds are
+$[a_{\min},a_{\max}]=[0,6]$~W and
+$[\lambda_{\min},\lambda_{\max}]=[0.3,2.5]$. Six poses fit the calibration;
+two are withheld. A proposal requires a scaled-design condition number at
+most $10^5$, fitting and held-out RMSE at most $0.12$~W, and held-out RMSE
+deterioration at most $0.004$~W. Updates change the network, calibration,
+or both. Every calibration change must pass this screen, and reference
+features are recomputed for each candidate. Network refitting combines the
+nominal cache with up to 32 current and historical training-reference
+measurements, weighted 1 and 30, respectively. Each member has a limit of
+300 iterations and validation patience 30. One failed fit rejects the
+candidate. Usable training references enter the replay pool even when the
+update is not deployed.
+
+Deployment uses raw predictions on the two current validation references.
+Let $\ell_r=\|\operatorname{diag}(s_\theta)^{-1}
+(\hat\theta_r-\theta_r)\|_2^2/3$, $L=(\ell_1+\ell_2)/2$, and
+$s_\theta=(0.14~\mathrm{kg},0.14~\mathrm m,0.036~\mathrm m)^{\mathsf T}$.
+The improvement and nominal-retention conditions are
+\begin{equation}
+\begin{aligned}
+ L_{\mathrm{new}}&\leq L_{\mathrm{old}}-
+       \max(\varepsilon_u,\rho_u L_{\mathrm{old}}),\\
+ L_{\mathrm{nom}}(\eta_0,W_{\mathrm{new}})&\leq
+       \gamma_{\mathrm{nom}}L_{\mathrm{nom}}(\eta_0,W_0).
+\end{aligned}
+\label{eq:adaptation_gate}
+\end{equation}
+The worst-reference constraint is
+$\max_r\ell_{r,\mathrm{new}}\leq\allowbreak
+\gamma_w\max_r\ell_{r,\mathrm{old}}+\varepsilon_u$.
+Component-MAE increases are limited to $\Delta_k$.
+Here $\varepsilon_u=10^{-6}$ excludes negligible improvements,
+$\rho_u=0.05$ requires a relative reduction, and
+$\gamma_{\mathrm{nom}}=1.25$ limits nominal forgetting. The fixed
+allowances $\Delta=(0.15~\mathrm g,0.5~\mathrm{mm},0.5~\mathrm{mm})$
+and $\gamma_w=1.05$ permit small local changes but limit component and
+worst-reference deterioration. Settings are chosen independently of
+unknown-object outcomes and fixed before evaluation. Reference features
+must be usable, and physical acceptance coverage must not decrease.
+$L_{\mathrm{nom}}$ averages $\ell$ over the compact model's fixed nominal
+validation set, using original-calibration inputs and each learner's
+initial model. The passing candidate with the lowest reference loss is
+deployed. If none passes, calibration and weights stay unchanged. Scoring
+retains every finite raw unknown prediction, including rejected estimates.
+Unknown-object performance is evaluated separately from reference selection.
+
+Four fixed scenarios---stationary, electrical, mechanical, and
+combined---each contain eight object/noise streams of four blocks. This
+gives 1408 probes, including 512 unknown events from 128 distinct payloads
+paired across scenarios. Drift follows prescribed powers of the cubic
+smoothstep $z(\rho)=3\rho^2-2\rho^3$, where $\rho$ is normalized episode
+progress, with axis-specific exponents. Parameters stay constant within
+each probe. Electrical drift reaches 1.30 times the nominal pitch holding
+losses and 2.20~W auxiliary draw. Mechanical drift reaches friction
+multipliers $(1.40,1.80,1.60,2.00)$ and PID-gain multipliers
+$(0.92,0.85,0.88,0.82)$. Command delay is fixed at 20~ms, with no
+encoder-return transport delay or added communication jitter. The frozen,
+empty-only, gated-calibration, and full variants require 0, 1, 3, and 7
+reference probes per opportunity; seven probes take 158.2~s, excluding
+handling. Drift reaches its endpoint at the final reference probe, leaving
+no subsequent unknown-object evaluation for the last update.
+
+Adaptive ridge uses identical recorded observations, ordering, reference
+weights, replay pool, calibration proposals, and gate thresholds. Both
+learners fit the domain-normalized target $(\theta-\theta_0)\oslash s_\theta$.
+Ridge refits 13 features with penalty $0.001$ and an unpenalized intercept,
+dividing weighted squared error by total weight. It retains offline
+standardization and uses a deterministic closed-form fit. Neural refits
+recompute standardization and stop on validation performance. Each learner
+retains its initial nominal-loss baseline; identical gates may therefore
+accept different updates. Descriptive paired intervals use 4000 complete
+object/noise-stream resamples without multiplicity adjustment.
+
+\end{document}
