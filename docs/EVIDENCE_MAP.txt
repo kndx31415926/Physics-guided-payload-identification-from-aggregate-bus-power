@@ -5,7 +5,6 @@ Data and source index for the eight figures and four tables. Paths are relative 
 Figure reproduction: run_review('figures').
 Table and error recomputation: run_review('tables').
 Mathematical derivations: manuscript/supplement.pdf.
-Document labels: submission/TEX_LABEL_MAP.json.
 
 Figure 1  Payload estimation and reference-assisted adaptation
   fig:flow

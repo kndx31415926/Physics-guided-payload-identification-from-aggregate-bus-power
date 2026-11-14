@@ -43,7 +43,7 @@ The supplied entry points select the relevant study source tree; study trees sha
 
 ## Correspondence
 
-Yi Li, School of Art and Design, Wuhan Institute of Technology, No. 206 Guanggu Street, Hongshan District, Wuhan 430205, China.
+Yi Li, Wuhan Institute of Technology, No. 206 Guanggu Street, Hongshan District, Wuhan 430205, China.
 
 Email: 13323107655@163.com  
 ORCID: [0009-0000-9541-8300](https://orcid.org/0009-0000-9541-8300)

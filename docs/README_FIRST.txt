@@ -21,7 +21,7 @@ Additional commands:
   run_review('hardware_dry_run')    Robot-interface configuration
 
 DIRECTORY GUIDE
-  manuscript/   Article, mathematical supplement and figure sources
+  manuscript/   Mathematical supplement and figure sources
   data/         Compact PNN feature dataset
   studies/      Study data, models and associated source records
   matlab/       Package-relative reproduction functions
