@@ -1,0 +1,25 @@
+STUDY INDEX
+
+Main payload estimation: pnn_large_training_20261031_v1
+  12,000 training, 2,000 validation and 2,000 test objects; four test conditions.
+  Preparation and execution: prepare_pnn_run.m and run_pnn_job.m.
+
+Reference-assisted neural and ridge adaptation:
+  pcu_prospective_20261030_v1; pcr_online_ridge_20261031_v4
+  Four scenarios, eight paired streams and four blocks; fixed 20 ms command delay.
+
+Compact-model comparison: psv_frozen_confirmation_20261030_v2
+  300 objects under four conditions; independent command/feedback delays of
+  10--15 ms. Model initialization: pgar_nominal_20261029_v1.
+
+Identifiability: pvi_static_20261030_v2; pvi_solver_domain_20261030_v2
+  Entries: pvi_run_static_validation.m; pvi_run_solver_domain.m.
+
+Affine controls and electrothermal sensitivity:
+  psx_supplement_formal_20261106_v1; pca_convex_audit_20261111_v1;
+  pbd_exploration_20261110_v1; pmd_mechanism_20261111_v1.
+
+Robot interfaces: run_robot_control.m; run_hardware_hefting.m.
+
+See ../docs/DATA_CATALOG.md and ../docs/WORKFLOWS.md for data descriptions
+and execution workflows.

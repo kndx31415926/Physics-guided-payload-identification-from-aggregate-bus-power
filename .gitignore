@@ -1,0 +1,6 @@
+/outputs/
+/project/results/
+/data/
+/studies/
+*.asv
+__pycache__/

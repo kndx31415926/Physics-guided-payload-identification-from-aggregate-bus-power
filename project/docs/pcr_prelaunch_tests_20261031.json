@@ -1,0 +1,90 @@
+{
+  "weighted": {
+    "passed": true,
+    "groups": 9,
+    "uniform_prediction_max_abs_error": 8.8817841970012523E-16,
+    "uniform_fit": {
+      "schema": "pcr_weighted_ridge_fit_v1",
+      "training_n": 40,
+      "positive_weight_n": 40,
+      "weight_sum": 40,
+      "lambda": 0.001,
+      "objective": 0.00078126189796557223,
+      "relative_normal_equation_residual": 4.9644678422728191E-17,
+      "weighted_intercept_gradient_norm": 4.9093302020696182E-16,
+      "preprocessing": "original offline feature mask/mu/sigma, unchanged",
+      "validation_targets_used": false,
+      "deterministic": true,
+      "model_sha256": "2c5e23674b358ea1afa1a8c93cf666ffe918bd0efa3d63860db6caaf38a654fe"
+    },
+    "weighted_fit": {
+      "schema": "pcr_weighted_ridge_fit_v1",
+      "training_n": 40,
+      "positive_weight_n": 40,
+      "weight_sum": 330,
+      "lambda": 0.001,
+      "objective": 0.00078123730849645012,
+      "relative_normal_equation_residual": 1.3249537026606878E-16,
+      "weighted_intercept_gradient_norm": 4.8491283799438219E-16,
+      "preprocessing": "original offline feature mask/mu/sigma, unchanged",
+      "validation_targets_used": false,
+      "deterministic": true,
+      "model_sha256": "a0083669c60330ed67e6bf87fed3c634b11e1110db1475234229bfd09ac03bc0"
+    },
+    "scaled_fit": {
+      "schema": "pcr_weighted_ridge_fit_v1",
+      "training_n": 40,
+      "positive_weight_n": 40,
+      "weight_sum": 5610,
+      "lambda": 0.001,
+      "objective": 0.00078123730849645012,
+      "relative_normal_equation_residual": 1.3249537026606878E-16,
+      "weighted_intercept_gradient_norm": 4.8491283799438219E-16,
+      "preprocessing": "original offline feature mask/mu/sigma, unchanged",
+      "validation_targets_used": false,
+      "deterministic": true,
+      "model_sha256": "a0083669c60330ed67e6bf87fed3c634b11e1110db1475234229bfd09ac03bc0"
+    }
+  },
+  "core": {
+    "passed": true,
+    "groups": 12,
+    "initial_parity": {
+      "preprocessing_max_abs_error": 0,
+      "coefficient_max_abs_error": 0,
+      "prediction_max_abs_error": 0,
+      "weighted_uniform_prediction_max_abs_error": 1.4606371667724716E-15,
+      "weighted_fit_report": {
+        "schema": "pcr_weighted_ridge_fit_v1",
+        "training_n": 600,
+        "positive_weight_n": 600,
+        "weight_sum": 600,
+        "lambda": 0.001,
+        "objective": 0.00039633688639325996,
+        "relative_normal_equation_residual": 1.9245198549885414E-17,
+        "weighted_intercept_gradient_norm": 2.130447031233847E-17,
+        "preprocessing": "original offline feature mask/mu/sigma, unchanged",
+        "validation_targets_used": false,
+        "deterministic": true,
+        "model_sha256": "cc904d344b379019205e1cf0f7ab301a79b0f9f14d2d83d77d35b9cb78096ca0"
+      }
+    },
+    "training_ids_exact": true,
+    "validation_ids_exact": true,
+    "fit": {
+      "schema": "pcr_weighted_ridge_fit_v1",
+      "training_n": 604,
+      "positive_weight_n": 604,
+      "weight_sum": 720,
+      "lambda": 0.001,
+      "objective": 0.00043166886979453768,
+      "relative_normal_equation_residual": 2.6025370138800144E-17,
+      "weighted_intercept_gradient_norm": 1.386603024504023E-18,
+      "preprocessing": "original offline feature mask/mu/sigma, unchanged",
+      "validation_targets_used": false,
+      "deterministic": true,
+      "model_sha256": "7037dd80687b6b3057a0726aacaa99f317b0d700dc5aca462ddcb37d4f6f8f46"
+    },
+    "scope": "Read-only prior development records; forced rejection; no research performance evaluation."
+  }
+}

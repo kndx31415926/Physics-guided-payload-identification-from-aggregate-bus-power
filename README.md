@@ -1,49 +1,45 @@
-# Physics-guided payload identification from aggregate bus power
+# Aggregate-Power Payload Estimation
 
-Mathematical supplement, simulation and training programs, fitted models, derived data, and MATLAB figure programs accompanying the study by Zhenglin Li, Peizhong Li, Ting Zhu and Yi Li.
+MATLAB simulation and analysis tools for estimating payload mass and planar center of mass from aggregate electrical power and joint encoders. The project includes physical inversion, ridge and neural residual models, calibration, reference-assisted adaptation, and an electrothermal simulation model.
 
-## Downloads
+## Getting started
 
-- [Mathematical supplement (PDF)](mathematics/supplement.pdf)
-- [Mathematical supplement (LaTeX)](mathematics/supplement.tex)
-- [Complete supplementary code and data](https://github.com/kndx31415926/Physics-guided-payload-identification-from-aggregate-bus-power/releases/download/v1.0.0/Supplementary_code_and_data.zip)
-- [Figure data and MATLAB plotting programs](https://github.com/kndx31415926/Physics-guided-payload-identification-from-aggregate-bus-power/releases/download/v1.0.0/Figure_data.zip)
-- [All release files](https://github.com/kndx31415926/Physics-guided-payload-identification-from-aggregate-bus-power/releases/tag/v1.0.0)
-
-The complete archive contains simulation, data generation, training, evaluation, statistical analysis, figure reproduction and robot-interface programs, together with fitted models, compact observations and individual predictions. Full raw trajectories can be generated with the supplied simulation programs. File hashes are listed in [SHA256SUMS.txt](SHA256SUMS.txt).
-
-## Reproduction
-
-Extract `Supplementary_code_and_data.zip`, open MATLAB, and change to the extracted `reviewer_code_and_data` directory. Run:
+Download `simulation_data.zip` from the [releases page](https://github.com/kndx31415926/Physics-guided-payload-identification-from-aggregate-bus-power/releases). It contains the source code together with compact observations, fitted models, individual predictions, and simulation results. Extract the archive and open its `payload_power_simulation` directory in MATLAB:
 
 ```matlab
-report = run_review;
+report = run_pipeline;
 ```
 
-This recomputes descriptive tables, saved-model predictions and the eight manuscript figures. Results are written to `review_outputs/`.
-
-Selected entries:
+The default command recomputes descriptive statistics and predictions from saved models. It writes new results under `outputs/`.
 
 ```matlab
-run_review('evaluation')
-run_review('online_statistics')
-run_review('figures')
-run_review('training_plan')
+run_pipeline('summary')
+run_pipeline('predictions')
+run_pipeline('evaluation')
+run_pipeline('online_statistics')
+run_pipeline('training_plan')
+run_pipeline('simulate_plan')
 ```
 
-The reference environment is MATLAB R2026a. Saved-model inference uses Deep Learning Toolbox and Statistics and Machine Learning Toolbox. Full simulation campaigns additionally use Optimization Toolbox, Robotics System Toolbox and Parallel Computing Toolbox.
+`run_pipeline('simulate')` generates one training-object probe. Feature-based retraining and full data-generation workflows are described in [Workflows](docs/WORKFLOWS.md). These operations are started explicitly and support separate output directories.
 
-- [Quick start](docs/README_FIRST.txt)
-- [Software requirements](docs/SOFTWARE.txt)
-- [Data-generation and training entry points](docs/PROCESS_CODE_MAP.txt)
-- [Figures, tables and data sources](docs/EVIDENCE_MAP.txt)
-- [Robot-interface programs](docs/HARDWARE_INTERFACE.txt)
+## Code and data
 
-The supplied entry points select the relevant study source tree; study trees share function names. Package integrity can be checked from the extracted directory with `python verify_package.py`.
+| Directory | Contents |
+| --- | --- |
+| `project/` | Simulation, training, calibration, and robot-interface code |
+| `analysis/` | Portable prediction, statistics, training, and simulation entry points |
+| `data/` | Compact observation-derived features and numeric analysis inputs |
+| `studies/` | Generated results, fitted models, configurations, and associated source snapshots |
+| `docs/` | Setup, workflows, data descriptions, and interface documentation |
 
-## Correspondence
+The Git checkout contains code and documentation. The release archive also provides the data and model files needed by the analysis commands. Full raw trajectory archives are not included; the simulation code generates trajectories, and the retained compact data support saved-model inference, feature-based training, and statistical analysis.
 
-Yi Li, Wuhan Institute of Technology, No. 206 Guanggu Street, Hongshan District, Wuhan 430205, China.
+The reference environment is MATLAB R2026a. See [Software requirements](docs/SOFTWARE.md) for the required toolboxes and [Quick start](docs/QUICK_START.md) for individual commands. `python verify_package.py` checks the distributed file hashes in the extracted archive.
 
-Email: 13323107655@163.com  
-ORCID: [0009-0000-9541-8300](https://orcid.org/0009-0000-9541-8300)
+- [Data catalog](docs/DATA_CATALOG.md)
+- [Model and mathematical methods](docs/MODEL.md)
+- [Simulation, training, and analysis workflows](docs/WORKFLOWS.md)
+- [Robot-control and acquisition interfaces](docs/HARDWARE_INTERFACE.md)
+
+Study identifiers and source snapshots retain their original names and checksums so that configurations, model files, and numerical results remain traceable. Use one source snapshot at a time: different simulation runs share MATLAB function names.

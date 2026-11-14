@@ -1,0 +1,24 @@
+VENDORED DEPENDENCIES AND PROVENANCE
+
+vendor/bdcl_v29 contains 17 active MATLAB files supporting robot geometry and
+rigid-body dynamics, position-servo and electrical-power models, configuration,
+and position-command/feedback serialization. ACTIVE_MANIFEST.csv lists these
+retained files by project-relative path and SHA256.
+
+UPSTREAM_MANIFEST.csv preserves the original 204-entry import inventory and
+hashes. It is provenance for the source import, not a list of files present in
+the current vendor directory. Reproduction of a packaged study should use that
+study's source snapshot and manifest so that its recorded source identity is
+preserved.
+
+Existing function names, protocol fields and data formats are retained for
+compatibility with dependencies and frozen models. In particular, bdclp in the
+feedback request is part of the existing extension protocol. It does not imply
+that stock firmware implements the requested compact-v2 telemetry.
+
+The nominal RoArm-M2-S rigid-body parameters in
+bdcl_v29/private/spinn3d_roarm_m2s_nominal_params.m credit Waveshare's public
+RoArm-M2-S URDF. Geometry and source assumptions remain documented in that file.
+The command/feedback interface records Waveshare firmware and SDK source URLs
+and reference commits in bdcl_v29/bdclp_interface_defaults.m. Preserve those
+source attributions and the original headers when reusing these files.

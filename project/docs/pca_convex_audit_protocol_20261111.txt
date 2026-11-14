@@ -1,0 +1,103 @@
+PCA post hoc convex-affine optimizer audit, version 1 (2026-11-11 identity)
+
+Purpose and limits
+This is an optimizer sensitivity audit planned after inspection of the existing
+PSX and PBD test panels. It is not a preregistered superiority test, an independent
+new confirmation, or an additional set of physical simulations. It adds two
+methods without modifying, replacing, or retraining the 14 frozen methods.
+Scientific performance is never a completion criterion. All six configurations,
+all optimizer starts, all planned test rows, and all failures are retained.
+No new ODE trajectory is generated. No existing run is resumed or changed.
+
+Development data and objective
+Read all 12,000 original training and 2,000 validation objects from sealed source
+feature caches; source tests are not read by the training routine. Train and
+validation are object-disjoint. Preserve the original 13 measured features,
+physics base, frozen ridge13 skip, and residual target after that base and skip.
+Means, standard deviations, and output amplitudes are computed from training
+only, exactly as in pnn_nn_fit. Affine correction has W of size 3 by 13 and three
+biases: 42 parameters. The biases are not penalized. There is no nonlinear layer.
+The fixed design, target, amplitudes, scales, smoothing epsilon, and L2 coefficient
+use the original single-rounded constants, then the mathematical objective and
+derivatives are evaluated in double precision. This is the same smooth physical
+loss family and regularization convention; floating point operations are not
+claimed bitwise identical to single-precision minibatch Adam.
+
+For A=[W,b], U=[standardized X,1], prediction=(U*A') .* amplitude, and scaled
+residual E=(prediction-target)./loss_scales, minimize the full-training mean of
+[(sqrt(E_mass^2+epsilon^2)-epsilon) +
+ (sqrt(E_cx^2+E_cz^2+epsilon^2)-epsilon)]/2
+plus lambda*sum(W.^2)/2. The original alpha is applied after training and is not
+part of this training objective. Positive lambda and epsilon yield a strictly
+convex finite-dimensional objective; numerical stationarity is assessed below,
+without claiming a rigorous primal-dual global-gap certificate.
+
+Numerical audit fixed before evaluation
+Use the six existing affine lambda values [1e-7,1e-6,1e-5,1e-4,1e-3,1e-2].
+For each lambda solve from zero and from each of the three original Adam
+validation-best affine networks. These four starts check numerical agreement;
+they are not new random seeds, independent samples, or an ensemble. Preserve
+each original early-stopped model and report its recomputed full-batch objective
+and gradient. Training nonstationarity of a validation-selected network is not
+called an Adam malfunction.
+
+Use deterministic full-batch damped Newton with analytic 42 by 42 Hessian,
+diagonal scaling, Cholesky solves, and Armijo backtracking. At most 200 Newton
+iterations, 60 backtracks, Armijo constant 1e-4. Factorization damping starts at
+1e-12 and cannot exceed 1e-3 in scaled coordinates. Stop only when the absolute
+gradient infinity norm is at most 1e-7 and half the Newton directional decrement
+is at most 1e-11 * max(1,abs(objective)). A line-search stall or iteration limit
+is a failure, never convergence. Record condition estimates and damping.
+All four starts must pass, objective differences must be at most
+1e-9 * max(1,abs(objective)), and maximum training prediction disagreement must
+be at most 1e-7 in physical units. Select the zero-start solution deterministically.
+No numerical threshold is tuned against validation or test performance.
+
+Before fitting, central differences check all 42 analytic gradient coordinates
+and three fixed Hessian-vector directions at zero and one nonzero point for the
+smallest and largest lambda. Step is 2e-5; relative errors normalized by
+max(1,reference infinity norm) must be at most 2e-6 for gradient and 2e-5 for
+Hessian-vector checks. Training arrays only are used. Export one affine member
+to the existing single-precision inference schema; its maximum training output
+difference from the double solution must not exceed 1e-7 physical units.
+Per-lambda checkpoints contain every start, convergence history, and source hash.
+Numerical failure stops the job with diagnostics, not an automatic retry or
+unreported configuration exclusion. Engineering changes require a new identity.
+
+Two locked audit methods
+affine_convex_fixed uses lambda=1e-4 and alpha=0.5, matching the original fixed
+affine/nonlinear pair. affine_convex_selected searches the original six affine
+lambdas and the original alpha grid, using the identical validation rule:
+lexicographically minimize worst condition/endpoint MAE ratio to ridge13,
+then mean ratio, then mean physical loss score. Ties retain the first entry.
+Both methods have one deterministic 42-parameter member; they must not be
+described as three-seed ensembles. The model file and selection are sealed
+before any test panel is loaded. The old 14 methods remain unchanged.
+
+Descriptive evaluation and reporting
+Reuse the complete previously inspected PSX original panel (500 objects, four
+conditions, 2,000 episodes) and PBD exploration (12 objects, 13 cells, 156 episodes).
+Evaluate all 16 methods on every planned row. Preserve raw and common-clipped
+predictions, finite failures, acceptance, bounds hits, and coverage. Raw errors
+on all finite planned rows are primary; rejected finite rows stay included.
+Assert old predictions and acceptance/bounds masks match their source outputs.
+The prespecified descriptive comparisons are nonlinear_fixed minus each new
+convex method, and nonlinear_fixed minus affine_fixed. Report mass absolute
+error in grams and planar COM distance in millimetres. Negative deltas favor
+nonlinear_fixed. Also export each object's raw paired deltas.
+
+Use 5,000 paired object bootstrap replicates with seed 32111101, within each
+condition, preserving complete object identity and both endpoints together.
+All conditions include every object; sorted object IDs and the same resampling
+stream preserve cross-condition object pairing. These are marginal descriptive
+95% intervals, not a simultaneous familywise superiority decision. Neither
+sample of test objects is newly acquired confirmation. PBD's 12 LHS objects
+remain exploratory and cannot justify a newly chosen favorable range as an
+unbiased validation domain. Report mixed or adverse outcomes without exclusions.
+
+Provenance and execution
+Freeze source_snapshot, protocol, inputs, anchor bundle, source hashes, and
+training contract under a new run. Verify source seals read-only; do not repair
+or rewrite originals. Use a process lock and immutable sealed checkpoints.
+Evaluation is allowed only after MODEL_LOCK.json. No scheduled retries or
+automatic follow-on studies are created by this code.

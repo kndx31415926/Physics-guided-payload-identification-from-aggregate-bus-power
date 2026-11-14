@@ -1,0 +1,9 @@
+function lock=pnn_test_gate(run_dir,plan)
+%PNN_TEST_GATE Independent data remain inaccessible until the bundle is fixed.
+file=fullfile(run_dir,'MODEL_LOCK.json');assert(isfile(file),'pnn:TestLocked','Test generation/cache requires MODEL_LOCK.json.');
+lock=jsondecode(fileread(file));required={'bundle_path','bundle_sha256','plan_signature','selection_uses_test'};
+assert(all(isfield(lock,required))&&isequal(lock.selection_uses_test,false)&& ...
+    strcmp(lock.plan_signature,plan.plan_signature)&&isfile(lock.bundle_path)&& ...
+    strcmp(prc_file_hash(lock.bundle_path),lock.bundle_sha256), ...
+    'pnn:TestLockMismatch','Locked bundle or its data identity changed.');
+end

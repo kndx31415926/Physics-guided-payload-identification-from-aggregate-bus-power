@@ -1,0 +1,77 @@
+Exploratory operating-range and mechanism study, 2026-11-10
+
+Purpose and status
+This is a development exploration authorized after an unfavorable four-object
+cross-model inspection. It is not a preregistered confirmation experiment and
+does not erase earlier outputs. The existing 2,000 original-model episodes,
+33 independent-model episodes, trained models and all failures remain unchanged.
+Any range or explanation selected here must be frozen before a separate new-object
+confirmation. No confirmation run is authorized or started by this program.
+
+Frozen method and comparisons
+Primary remains ridgeSkipNN13. The same fourteen frozen methods are evaluated,
+including ridge13, ridgeAug, interactionRidge, and the fixed/selected affine and
+nonlinear controls. No retraining, seed selection, teacher-gate change, feature
+change, or outcome-driven deletion. All methods receive the same observations.
+Raw errors include finite rejected predictions. Common clipping and accepted-only
+statistics are separate; missing and failed predictions remain in all planned counts.
+
+Fixed bounded exploratory design
+Twelve new Latin-hypercube payload objects span the declared mass/cx/cz box.
+Object seed 26111011, object IDs 8100001--8100012. These are development objects,
+never later labeled unseen confirmation objects. Each object has thirteen cells:
+one independent-plant baseline, then mechanical/electrical/combined at prescribed
+severity s=0.1, 0.25, 0.5 and 1. All cells are retained even if unfavorable.
+Total 156 trajectories; the independent unit is an object, not a trajectory.
+Within each object, nuisance, sensor and communication seeds are fixed across
+conditions. Complete trajectories share random streams; early failures can alter
+noise consumption and are not claimed to preserve pointwise power-noise pairing.
+
+Plant and timing
+Reuse the independently constructed same-geometry electrical/mechanical plant,
+ode15s settings, all eight postures and full duration. No shortened holding periods,
+coarser integration, or reduced sensor noise. Commands/encoders have 50 ms cadence,
+power is sampled at 10 ms, and the two transport directions each have 10--15 ms jitter.
+Only the new run's allowed severity list extends the earlier frozen plant list.
+Severity is a prescribed path coordinate: temperature coefficient and initial
+temperature both scale with s, so resistance includes nonlinear dependence on s.
+It is not service time, uniform linear degradation, or a guarantee that s=1 is worst.
+Parameters are synthetic stress priors, not identified RoArm or CR5A parameters.
+
+Exploratory advantage and boundaries
+For each condition and each declared comparator, report paired object mass-absolute-
+error and planar-COM-distance differences, individual wins and coverage. A negative
+mean difference is an exploratory point advantage only. Both outputs must favor the
+primary to flag joint point advantage, with complete coverage. Keep all comparators
+visible: superiority to ordinary ridge is not superiority to enriched ridge.
+Do not collapse outputs to a chosen score or select a winning comparator after viewing.
+Do not assume monotonicity or interpolate an exact boundary between grid cells.
+Bootstrap intervals, if produced by the unchanged evaluator, are descriptive only and
+do not certify significance, noninferiority or an objectively optimized valid domain.
+
+Mechanism diagnostics
+Separate physics6 -> ridge13 -> ridgeSkipNN13 errors to isolate the nonlinear
+increment over the exact frozen ridge skip. Save teacher fitting/check errors,
+scaled-Jacobian minimum singular value and condition number, and train-standardized
+feature magnitudes (these are diagnostics, not new acceptance thresholds).
+At the same holding windows, compare true sampled power to nominal power evaluated
+at each actual sampled true q with the known simulated payload; average afterwards.
+Also record observed-q residuals, winding temperature and copper/bridge losses.
+Mechanism-diagnostic truth never enters predictor features, model selection or gates.
+The inherited physical_success flag remains simulation-validity metadata in the
+declared evaluation pipeline; it is not a hardware-observable acceptance gate.
+Mechanical/electrical/combined pairing supports group-level interactions; attribution
+to one parameter requires a later explicit mechanism ablation. Correlation alone is
+not a demonstrated cause.
+
+Execution and preservation
+Seal each full trajectory and resume only with identical model/input/source identity.
+After each complete object write a new exploratory analysis snapshot, never overwrite
+an earlier snapshot. An initial two-episode execution check may stop before formal
+background continuation; its pass criteria are physics/energy/stationarity/features,
+never estimation error or which model wins. No hardware actions.
+One background MATLAB compute thread, manual Windows-owned no-trigger task, no boot,
+login, timer or automatic restart. Closing the launching application must not terminate a manually started
+worker. After reboot, resume only when the user asks. Cooperative pause occurs at an
+episode boundary; a forced pause retains committed records and recomputes only the
+unfinished episode. Large-scale confirmation stays unstarted.

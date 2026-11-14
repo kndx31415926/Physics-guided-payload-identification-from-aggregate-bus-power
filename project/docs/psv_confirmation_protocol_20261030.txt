@@ -1,0 +1,39 @@
+PSV: Frozen-model confirmation on new objects and model-mismatch stress tests
+Protocol date: 2026-10-30
+English distribution summary of the experiment protocol.
+
+1. Objective and scope
+Evaluate previously selected models on 300 new objects within the original payload domain, and assess prespecified mechanical and electrical model mismatch that was not used for tuning.
+All models at training budgets 72/240/600, three-seed neural-network ensembles, and deterministic ridge models were fixed before data generation. The new test set is not used for retraining or model selection.
+The primary methods are the physics inverse, 13-feature physics-residual NN, 13-feature residual ridge regression, 40-feature direct q/P NN, 48-feature direct q/P/sdP NN, and 48-feature direct ridge regression.
+Lao PE/T/T-A method adaptations, fixed at training budget 600, provide secondary comparisons on the same new objects. They use different encoder-tracking features and are adaptations to the present four-axis PID, eight-pose, planar-COM platform.
+Comparisons share observations, objects, labeled training-data sources, and the original search options. Input dimensions, parameter counts, physical priors, and inference costs differ; see frozen_selected_models.csv.
+Outputs are mass and planar COM coordinates cx/cz. The fixed eight-pose probe02 sequence lasts approximately 22.6 seconds.
+
+2. New data
+Objects are drawn by stratified Latin hypercube sampling: m=80--220g, cx=50--190mm, cz=-18--18mm. These ranges match the original training domain.
+Object seed: 1130101; object IDs: 2000001:2000300; sensor seed: 11400000+i; communication base seed: 11500000+i.
+Existing run specifications, manifests, and object tables are checked for duplicate seeds and exact parameter tuples; input hashes are recorded.
+There are 300 complete servo trajectories per condition and 1200 in total. Conditions are paired on the same objects, sensor noise, and communication random streams.
+Command and encoder-return delays are independently sampled from U(10,15)ms. The send/sample period is 50ms, the plant integration step is 1ms, and power is sampled at 100Hz without delay. Applied delays are rounded upward to 1ms.
+Communication is a shared disturbance background for this experiment.
+
+3. Prespecified mismatch conditions
+Nominal: the original robot and electrical-power models, with the shared communication background.
+Mechanical: multiply the three pitch-link masses by [1.025,.98,1.03], shift their COM x coordinates by [1,-1,1.5]mm, and scale each inertia about its COM in proportion to mass. Multiply the four-axis viscous/Coulomb friction terms by [1.15,1.35,1.25,1.4]. For each axis, multiply all three PID gains by the corresponding factor in [.98,.94,.96,.92]. Geometry and unknown payload parameters remain fixed.
+Electrical: at 100Hz power generation, add nonnegative deltaP=alpha*sum(abs(tau))+beta*sum(tau.^4).
+The coefficients alpha and beta are calculated only from the prespecified known nominal reference payload [m=.15kg,cx=.12m,cz=0] and probe02 static gravity torques. Each added term contributes 1% of its mean reference power, for a total of 2%. Coefficients and reference power are recorded in data_plan.conditions. These added terms are absent from the fixed static squared-torque inverse model.
+Combined: apply the mechanical and electrical mismatches together.
+Mismatch magnitudes are fixed independently of test errors. These are uncalibrated simulation sensitivity models using the shared MATLAB rigid-body tools and integrator. The power observation model does not feed supply-voltage drop back to output torque; added electrical loss is evaluated at sampling times.
+Power samples including the additional loss are checked against the bus-current limit at 100Hz. A violation is recorded as a physical failure and the trajectory remains in the evaluation. This is a sampled-current check.
+Inference always uses the original nominal model and calibration. Mismatch parameters, true torques/positions, and payload labels are restricted to generation and audit truth and are not provided to the estimation API.
+
+4. Prespecified evaluation
+Retain each NN seed and its three-seed ensemble, with one result for each deterministic method. Report both raw predictions and predictions clipped to common physical bounds. Score every finite prediction, including cases with teacher rejection or physical failure.
+Report finite coverage, acceptance, physical failures, unavailable observations, exceptions, and boundary hits separately. Error metrics are MAE/RMSE/P95/maximum for mass, cx, and cz, together with planar COM distance.
+The primary comparison uses nominal new objects and training budget 600: residual NN versus direct q/P NN40 for mass MAE and mean planar COM distance. Residual ridge regression is retained as the simple reference method.
+Other training budgets, methods, and mismatch conditions are prespecified secondary or stress analyses. Their unadjusted intervals are descriptive.
+Use paired bootstrap resampling at the object level, with 3000 resamples and seed 1160101. Fix the three-seed NN ensemble before resampling; model seeds are not independent statistical units.
+Record per-object error differences and their 95% percentile intervals. Method comparisons use pairs for which both predictions are finite and report the paired count. Full-case coverage is retained separately for each method.
+Failed objects are not replaced or resampled. Report all prespecified results, including unfavorable comparisons. Smoke-test objects and seeds are separate from the formal evaluation and do not determine these settings.
+The evidence concerns simulation within the stated payload domain and planar COM. Physical-robot data have not been collected.

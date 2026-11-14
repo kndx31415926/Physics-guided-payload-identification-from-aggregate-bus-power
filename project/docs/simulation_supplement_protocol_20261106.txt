@@ -1,0 +1,73 @@
+Simulation supplement: independent actuator/power model and matched-loss controls
+Status: IMPLEMENTATION AND SMOKE CHECK ONLY. Formal execution awaits a new explicit user request.
+No boot/login triggers, scheduled runs, automatic retries, or hardware commands are permitted.
+
+Purpose
+1. Test frozen payload estimators on an independently constructed actuator/electrical plant.
+2. Separate nonlinear representation from feature scaling, physical loss, ridge skip, and selection.
+No expected winner, error target, or favorable outcome is a validity criterion.
+
+Existing evidence is immutable
+Read the completed pnn_large_training_20261031_v1 run. Reuse its 12,000 training and 2,000
+validation objects for new controls; never read old test labels for training/selection.
+The original frozen primary and all ordinary/enhanced ridge baselines retain their weights.
+The supplement is motivated by observed old comparisons, so confirmation requires NEW test objects.
+Preserve earlier sources, outputs, and failed attempts. Each code revision uses a new run.
+
+Independent plant
+Same declared reduced robot geometry and common MATLAB rigidBodyTree library; an independently
+constructed body tree, separate servo/electrical equations and numerical integration are used.
+This is cross-model testing, not a second real robot, independently measured motor parameters,
+or wholly independent simulation software. Nominal static calibration is an explicit shared prior.
+Electrical current, back EMF, winding resistance/temperature and drive losses replace the inherited
+port-power formula. Mechanical, electrical and combined departures are specified before testing.
+No parameter, calibration, acceptance threshold or sample window may be tuned to payload errors.
+Hidden states/condition/severity/true payload do not enter deployment features or model prediction.
+50 ms host command/encoder cadence; command and return delays independently in 10--15 ms.
+Document power sampling and transport separately. This does not establish measured real-time operation.
+Formal cells: independent baseline severity0, mechanical/electrical/combined at severities0.5 and1.
+The baseline is the independent plant at its base parameters, not identical to the old simulator.
+
+Matched-loss controls
+Freeze the old primary's input set and selected ridge skip. Train affine correction (no hidden
+layer) and nonlinear correction with identical train-only input/response scaling, physical smooth
+loss, Adam settings, three seeds, epoch stopping, and validation minimax objective.
+Report a fixed pair at the original primary architecture/lambda/alpha (only hidden layers differ).
+Also report equal-count searches: six configurations, three seeds and five alpha evaluations per
+family. Nonlinear has two architectures times three lambdas; affine has six lambdas. Equal counts
+do not imply identical function spaces, regularization geometry, convergence or computational cost.
+Never select a seed. Equal physical-unit averaging of all three seeds precedes alpha scoring.
+Full Adam settings follow the frozen source study: max1500 epochs, patience150, batch256,
+learning rate0.001, beta1=0.9, beta2=0.999, epsilon1e-8, checkpoint every5 epochs.
+Store full stopping histories; an epoch cap is not evidence of convergence.
+
+Supplement data and outputs
+Planned full panel: 500 new independent IID-uniform payload objects, in the same stated payload box,
+each evaluated in four original-generator families for matched-loss comparison, and seven independent-
+plant cells for transfer. Thus 500 independent objects per cell, 5,500 episodes total (not 5,500
+independent objects). No online updates. The same objects may be paired across cells and models.
+All new model selection/locks precede new test generation. Simulation nuisance, sensor and packet
+seeds are independent of payload draws. All methods get the same observations in each episode.
+Raw and common-bound-clipped errors, planned/finite/accepted/failed counts, errors of rejected finite
+predictions and reasons are retained. Physical simulator validity is an audit label, not a measured
+hardware gate. Per-condition paired-object bootstrap95% intervals are descriptive; no old8/24-endpoint
+superiority rule is borrowed and no omnibus superiority claim is made. Failure reduces coverage.
+
+Smoke profile
+Read first four rows per split/family by ID (16 train,16 validation), not by prediction quality.
+Use distinct payload/seed identities, two epochs for new fits, two new objects and four independent-
+plant cells (baseline0 plus mechanical/electrical/combined1). Exercise the half-severity configuration
+algebraically. New original-model four-family smoke panel also uses these two objects.
+Smoke scores are engineering diagnostics, never formal scientific results; bootstrap inference is off.
+Check source/bundle/input identity, all eight plateaus and sample timing, units/signs/energy closure,
+gravity agreement and numerical convergence on a short segment, loss/affine identities, no truth
+dependence in prediction, raw/clip/failure denominators, no-op resume, interrupted training resume,
+and refusal to launch a formal run without an explicit manual authorization argument.
+
+Execution
+One MATLAB process, one compute thread for smoke. Checkpoints are sealed per episode and per fitted
+candidate/epoch. Before resuming, verify code/data/options; changed identities require a new run.
+Default launch action is Status. An explicit Smoke action starts only a prepared smoke run.
+Full execution requires a separate explicit user instruction and manual full authorization; no full
+run is started by this implementation or by successful smoke completion. Closing the launching application must not
+terminate an already manually started worker; reboot does, and subsequent resume remains manual.

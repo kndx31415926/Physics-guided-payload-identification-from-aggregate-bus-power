@@ -1,0 +1,155 @@
+HARDWARE ACQUISITION AND PAYLOAD ESTIMATION
+
+run_hardware_hefting acquires an eight-pose probe and then performs the physical
+inverse estimate and residual-network inference. It accepts one options
+structure with modes dry_run (default), mock, replay and hardware. Independent
+robot inspection and joint control use run_robot_control; see ../ROBOT_CONTROL.txt.
+
+The estimator accepts a pgar_residual_bundle_v1 bundle containing three models
+and the matching 13-feature configuration and probe_02 pose order. Supply the
+compatible bundle through model_file.
+
+Package example, from the extracted package root:
+    packageRoot = pwd;
+    addpath(fullfile(packageRoot,'project'));
+    modelFile = fullfile(packageRoot,'studies', ...
+        'pgar_nominal_20261029_v1','model_bundle.mat');
+    D = run_hardware_hefting(struct('mode','dry_run','model_file',modelFile));
+The dry run loads/checks the bundle and reports the interface without opening
+hardware. Supplying model_file also avoids dependence on the original local
+project/results layout.
+
+Robot contract
+H=bpil_hefting_hardware_profile() returns an uncalibrated template. Live use
+requires an identified serial port/firmware, calibrated four-axis model-to-wire
+mapping and soft limits, verified wrist/long-rod installation, feedback semantics,
+payload fixture and swept probe envelope. The template leaves unknown mappings
+and limits unset. A synthetic fixture_only profile cannot open hardware.
+
+Position commands are T102; feedback requests are T105 with compact-v2 T1051
+responses. The response contract comprises fver=2, matching freq, increasing fseq,
+fmode, five-servo read-success bits fok, acquisition interval ft0/ft1, and startup
+torque-limit readback flim. The shoulder uses two servos; the expected five
+registers are H.required_torque_limit_register([1 2 2 3 4]). Limits are read only:
+allow_torque_limit_write must be false. The baud rate and required registers must
+match the selected model configuration. Stock T1051 is insufficient for this
+acquisition contract and is not silently substituted.
+
+Before movement, pre-position the arm at the first probe pose. The loop requires
+fresh position and independent power data plus valid torque-limit readback; it
+does not insert an approach motion. End-of-probe completion requires distinct,
+fresh post-command encoder samples within the configured final tolerance for
+the stationary interval. Software stop closes the port and retains the last
+position target and torque state; physical stopping and load support follow the
+installation requirements described in ../ROBOT_CONTROL.txt.
+
+Timing
+Position-command starts and encoder-request starts are each separated by at least
+50 ms. Communication is asynchronous; a late host retains the previous target
+and advances the reference by one step only after a successful command write.
+Actual probe duration can therefore exceed the nominal duration. Each stationary
+window follows actual send times, without compressing delayed samples onto a
+nominal clock. Inference starts after acquisition and device cleanup; fitting or
+retraining does not run inside the control loop.
+
+All timestamps use the serial transport's monotonic clock. Encoder sample_t is
+the conservative request-time lower bound, not an exact device sampling time.
+MCU micros values bound the acquisition span and are not host timestamps.
+Defaults are maximum encoder age 80 ms, power age 40 ms, request timeout 100 ms,
+and acquisition span 50 ms. Duplicate or out-of-order samples do not refresh age.
+sent_t, write_completed_t and received_t are host measurements; tx_end_estimate
+and application-time estimates are not firmware acknowledgements. The UART 8N1
+wire-time lower bound is 10*byte_count/baud_rate (default 115200 baud).
+
+Independent power-provider contract
+Hardware mode requires power_provider_factory, implemented for the chosen meter:
+    source = factory(now_function,H)
+    source.poll = @(now) ...;  % nonblocking; drain already acquired samples
+    source.close = @() ...;    % idempotent cleanup
+The factory receives the serial transport's clock function. poll(now) returns
+one sample struct, a struct array, a cell array of structs, or []/{} when no new
+data exist. Each sample must contain:
+    Vin_V          finite positive measured input voltage (V)
+    Iin_A          finite measured input current (A), preserving sign
+    sample_t       sample time or verified conservative lower bound (s)
+    received_t     host receipt time (s), sample_t <= received_t <= now
+    seq            nonnegative integer, strictly increasing for new samples
+    clock_id       equal to H.clock_id
+    calibrated     true for a calibrated source
+    measurement_id nonempty measurement/calibration identity, fixed per session
+sample_t must also increase and received_t must not decrease. Map device times
+to the shared clock; do not label an unknown-latency receipt time as exact sample
+time. The target is independent 100 Hz acquisition drained through a queue,
+not one reading per 50 ms control tick expanded by interpolation. The interface
+computes Pin_W=Vin_V*Iin_A and Pdraw_W=max(Pin_W,0). Joint load registers, nominal
+voltage, simulated power and averaged power alone do not satisfy this contract.
+No meter-specific driver is selected by the interface.
+
+Live call
+After completing H and implementing the device-specific factory:
+    opts = struct('mode','hardware','hardware',H,'enable_hardware',true, ...
+        'model_file',modelFile, ...
+        'power_provider_factory',@my_actual_power_source_factory, ...
+        'output_file',fullfile(packageRoot,'hardware_run_001.mat'));
+    R = run_hardware_hefting(opts);
+The factory name is an example, not a supplied device driver. Optional overrides
+are cfg, probe, eta, stop_requested, max_time_s, max_tracking_error_rad,
+max_power_W, max_io_overrun_s, final_position_tolerance_rad and
+final_stationary_duration_s. cfg/probe must remain compatible with the loaded
+bundle. stop_requested must be nonblocking and return a scalar logical. Mock
+mode instead requires an explicit transport with is_mock=true and an independent
+power-provider callback or factory; injected transports are rejected in live mode.
+
+Saving, replay and reports
+Hardware calls automatically choose a new MAT filename under
+project/results/hardware_sessions unless output_file is supplied. Existing result
+or checkpoint filenames are rejected. After acquisition/cleanup, a separate
+*_capture.mat raw checkpoint is written before observation building and inference;
+R.raw_checkpoint_file identifies it. Loop aborts retain partial records and reasons.
+
+R.session stores raw power/position samples, sequence numbers, requests, commands,
+times, decisions and events. R.obs contains causally aligned observations, actual
+eight-window timing, sample counts and completeness/stationarity checks.
+R.prediction contains component/ensemble estimates, the physical initial estimate
+and rejection reasons. prediction.theta is [mass_kg, com_x_m, com_z_m] (NaN on
+rejection); prediction.accepted means the checks passed. The result also records
+cfg, hardware, probe, model_sha256, source_sha256 and inference_after_capture_s.
+hardware_opened and session.is_mock identify acquisition origin.
+
+Replay performs no device I/O. Passing the saved result preserves its recorded
+configuration; the default replay model path is checked against the saved hash.
+For a relocated package, supply an explicit matching modelFile:
+    S = load('hardware_run_001.mat','session_result');
+    R = run_hardware_hefting(struct('mode','replay', ...
+        'session',S.session_result,'model_file',modelFile));
+Verify a relocated model against S.session_result.model_sha256 before replay.
+
+    report = bpil_hefting_report('hardware_run_001.mat','new_report_directory');
+The report exports observation CSVs, plateau summaries and power/angle/timing
+plots. An optional third argument [mass_kg,cx_m,cz_m] supplies independently
+measured truth for scoring. The estimator outputs planar cx/cz, not lateral cy.
+
+Calibration and known references
+For an independently confirmed empty capture:
+    anchor = empty_capture.obs;
+    anchor.is_anchor = true; anchor.known_mass_kg = 0;
+    [eta_new,calibration] = bpil_calibrate_anchor(cfg,anchor,eta_previous);
+Use opts.eta=eta_new in the next acquisition only if calibration.accepted.
+A predicted zero mass does not establish an empty reference.
+
+    ref = bpil_hefting_known_reference(file,'reference_train',[m,cx,cz]);
+Use reference_validation for held-out references. This helper binds the recorded
+observations to the file SHA256 and independently supplied labels. The
+pra_online_update interface accepts four training references and two independent
+validation references, with updates between motions and its deployment gates
+retained. Preserve every attempted capture and score against independently
+measured reference values; predictions are not reference labels.
+
+Protocol provenance
+Reference source versions are Waveshare firmware commit
+c6ccc5bda2eb92df2f0850d3e63cc42b81557f4f and SDK commit
+d9893632aa7f5a9cb283136ab024faf3143ea7db. Relevant upstream files are:
+https://github.com/waveshareteam/roarm_m2/blob/c6ccc5bda2eb92df2f0850d3e63cc42b81557f4f/RoArm-M2_example/RoArm-M2_module.h
+https://github.com/waveshareteam/waveshare_roarm_sdk/blob/d9893632aa7f5a9cb283136ab024faf3143ea7db/roarm_sdk/common.py
+The compact-v2 feedback contract requires a firmware extension implementing
+the response fields specified above.

@@ -1,0 +1,107 @@
+ROBOT CONTROL INTERFACE
+
+run_robot_control provides independent RoArm-M2 joint-position control without
+loading a payload model or opening a power instrument. It accepts one options
+structure. Modes are dry_run (default), mock and hardware; actions are ports,
+inspect (default) and trajectory. All planned joint angles are model-coordinate
+radians, ordered [base, shoulder, elbow, wrist].
+
+From the extracted package root:
+    packageRoot = pwd;
+    addpath(fullfile(packageRoot,'project'));
+    D = run_robot_control();
+    P = run_robot_control(struct('action','ports'));
+The default call opens no device. The ports action lists available ports without
+selecting or probing them.
+
+Local profile
+    profileFile = fullfile(packageRoot,'project','hardware','roarm_local.json');
+    H = bpil_arm_write_profile_template(profileFile);
+The template refuses to overwrite an existing file. NaN/JSON null denotes an
+unknown value, not zero. Complete the profile from local measurements before
+motion: serial_port, firmware_id, calibration_id, wrist installation, sign,
+zero_offset_rad, model and wire limits, feedback_t_semantics, command_speed,
+command_acc, and joint speed/acceleration/command-step limits. The mapping is
+    wire_angle = sign .* model_angle + zero_offset_rad
+Set calibrated, position_source_verified, long_rod_verified,
+probe_envelope_verified and payload_fixture_verified only after checking the
+actual installation; set simulation_only=false. fixture_only=true is restricted
+to software fixtures and is rejected in hardware mode.
+
+command_speed is in encoder steps/s (4096 steps/revolution), and command_acc is
+in units of 100 steps/s^2. Their accepted ranges are 1..4096 and 1..254,
+respectively. Protocol zero means maximum speed/acceleration, not a stop.
+required_torque_limit_register specifies four joint limits; the readback covers
+five servos because the shoulder has two. allow_torque_limit_write must be false.
+The interface reads these registers and does not configure torque limits.
+
+Read-only inspection
+    H = bpil_arm_control_profile();
+    H.serial_port = 'COM_PORT';  % replace with the identified local port
+    R = run_robot_control(struct('mode','hardware','action','inspect', ...
+        'hardware',H,'enable_hardware',true));
+Inspection requires a selected port but does not require a calibrated angle
+mapping. It sends T105 feedback requests only and records raw replies and
+capabilities. Stock T1051 values remain diagnostic data. For extended compact-v2
+feedback, the controller checks request correlation, sequence, read-success bits
+and the acquisition interval; unconfigured angle mappings remain raw. In wrist
+pitch mode, feedback t is tool pitch: hand=t-s-e+pi/2 before inverse mapping.
+The controller does not switch modes, home the arm or update firmware.
+
+Trajectory preflight and execution
+Use a completed local H and an N-by-4 waypoints matrix whose swept workspace has
+been checked. The first row is the already-achieved start; no approach path is
+inserted. For example:
+    plan = bpil_arm_plan(waypoints,1.5,1.2);
+    D = run_robot_control(struct('action','trajectory','hardware',H,'plan',plan));
+    D.preflight.ready
+Move and hold durations must be integer multiples of 0.05 s. Preflight checks
+model/wire joint limits, discrete velocity/acceleration and per-command steps.
+It is a joint-space check; fixture, payload and obstacle clearance require local
+verification. Passing preflight does not start motion.
+
+After pre-positioning and checking the installation:
+    R = run_robot_control(struct('mode','hardware','action','trajectory', ...
+        'hardware',H,'plan',plan,'enable_hardware',true, ...
+        'stop_requested',@my_stop_flag));
+my_stop_flag is a user-supplied nonblocking callback returning a scalar logical;
+omit stop_requested if no callback is supplied. To load the JSON profile, use
+profile_file instead of hardware; the two options cannot be combined.
+
+Before the first T102 command, the loop checks fresh compact-v2 encoder data,
+the starting pose and five-servo torque-limit readback. Stock feedback does not
+satisfy this motion contract. Consecutive command starts and feedback-request
+starts are each at least 50 ms apart. A late host extends the motion duration;
+it does not send catch-up bursts. Completion requires fresh feedback acquired
+after the terminal command and within the final tolerance for the hold interval.
+
+Optional limits are max_time_s, max_tracking_error_rad, final_tolerance_rad,
+final_hold_s and max_io_overrun_s. Choose them for the actual installation;
+the configured thresholds govern tracking and completion. The serial
+transport bounds receive buffering and transmit backlog and rejects further
+writes after a communication fault.
+
+Stop and support behavior
+Software stop, fault or disconnection stops new targets and closes the port;
+the last received position target and servo torque state remain. The arm may
+continue toward that target. This is not a physical emergency stop. Confirm
+support by the load-bearing joints, including both shoulder servos, before
+motion; enabling global torque must not be treated as a current-pose hold because
+an earlier target may remain active. Arrange physical stopping and load support
+for the actual installation.
+
+The entry does not automatically send T0, T1, T100, T107, T210 or T222. In the
+recorded reference firmware, T0 removes torque for 10 s and re-enables it; T1
+changes mode and moves; T100 homes; T210 can disable torque; T222 writes a startup
+mission. These are not side-effect-free close or handshake commands.
+
+Records
+Hardware sessions save to project/results/hardware_control by default. An
+explicit output_file must be new. R.preflight contains checks; R.session contains
+raw frames, requests, commands, write attempts, timing, capability status and
+abort reasons. Host write completion and estimated transmission times are not
+device acknowledgements. hardware_opened identifies a live opening, while
+session.is_mock identifies an injected test transport. completed records workflow completion.
+
+For synchronized power acquisition and payload estimates, see
+docs/HARDWARE_INTERFACE.txt.
